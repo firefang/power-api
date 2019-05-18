@@ -1,4 +1,4 @@
-package io.github.firefang.server;
+package io.github.firefang.power.server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
