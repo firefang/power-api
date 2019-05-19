@@ -10,6 +10,11 @@ mybatis:
 power:
   login:
     type: token
+    exclude-paths:
+    - /swagger-resources/**
+    - /webjars/**
+    - /v2/**
+    - /swagger-ui.html/**
   transaction:
     required-transaction-attributes:
     - login
