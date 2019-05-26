@@ -4,12 +4,30 @@
 <mapper namespace="io.github.firefang.power.server.mapper.IRolePermissionMapper">
     <sql id="table">t_role_permission</sql>
 
+    <insert id="add">
+        INSERT INTO <include refid="table" /> ( `rid`, `pid` ) VALUES
+        <foreach collection="permissionIds" item="permId" separator=",">
+            ( #{roleId}, #{permId} )
+        </foreach>
+    </insert>
+
+    <delete id="deleteByRoleId">
+        DELETE FROM <include refid="table" />
+        WHERE `rid` = #{roldId};
+    </delete>
+
     <select id="countPermission" resultType="java.lang.Integer">
         SELECT COUNT(0) FROM <include refid="table" /> rp
         JOIN t_permission p ON p.`id` = rp.`pid`
-        WHERE p.`permission_name` = #{permissionName} AND rp.`rid` IN
-        <foreach collection="collection" item="item" open="(" close=")" separator=",">
-            #{item}
+        WHERE p.`perm_name` = #{permissionName} AND rp.`rid` IN
+        <foreach collection="roleIds" item="roleId" open="(" close=")" separator=",">
+            #{roleId}
         </foreach>
+    </select>
+
+    <select id="findPermissionsByRoleId" resultMap="io.github.firefang.power.server.mapper.IPermissionMapper.permMap">
+        SELECT P.`id`, p.`perm_name`, p.`perm_group` FROM <include refid="table" /> rp
+        JOIN t_permission P ON rp.`pid` = p.`id`
+        WHERE rp.`rid` = #{roleId};
     </select>
 </mapper>

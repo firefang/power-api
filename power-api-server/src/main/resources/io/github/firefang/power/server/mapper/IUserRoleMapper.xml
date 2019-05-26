@@ -31,4 +31,9 @@
         SELECT `rid` FROM <include refid="table" />
         WHERE `uid` = #{userId};
     </select>
+
+    <select id="countByRoleId" resultType="java.lang.Integer">
+        SELECT COUNT(0) FROM <include refid="table" />
+        WHERE `rid` = #{roleId};
+    </select>
 </mapper>

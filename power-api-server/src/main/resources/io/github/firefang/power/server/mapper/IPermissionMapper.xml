@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.github.firefang.power.server.mapper.IPermissionMapper">
+    <sql id="table">t_permission</sql>
+    <sql id="cols">`id`, `perm_name`, `perm_group`</sql>
+    <resultMap type="PermDO" id="permMap">
+        <id column="id" property="id" />
+        <result column="perm_name" property="name" />
+        <result column="perm_group" property="group" />
+    </resultMap>
+
+    <insert id="addBatch">
+        INSERT INTO <include refid="table" /> ( `perm_name`, `perm_group` ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            ( #{item.name}, #{item.group} )
+        </foreach>
+    </insert>
+
+    <delete id="deleteNameNotIn">
+        DELETE FROM <include refid="table" />
+        WHERE `perm_name` NOT IN
+        <foreach collection="collection" item="name" open="(" close=")" separator=",">
+            #{name}
+        </foreach>
+    </delete>
+
+    <update id="updateBatch">
+        UPDATE <include refid="table" />
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="`perm_name` = case" suffix="end,">
+                <foreach collection="list" item="i">
+                    when `id` = #{i.id} then #{i.name}
+                </foreach>
+            </trim>
+            <trim prefix="`perm_group` = case" suffix="end,">
+                <foreach collection="list" item="i">
+                    when `id` = #{i.id} then #{i.group}
+                </foreach>
+            </trim>
+        </trim>
+        WHERE `id` IN
+        <foreach collection="list" item="i" open="(" close=")" separator=",">
+            #{i.id}
+        </foreach>
+    </update>
+
+    <select id="countByIds" resultType="java.lang.Long">
+        SELECT COUNT(0) FROM <include refid="table" />
+        WHERE `id` IN
+        <foreach collection="collection" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="findAll" resultMap="permMap">
+        SELECT <include refid="cols" /> FROM <include refid="table" />
+    </select>    
+</mapper>

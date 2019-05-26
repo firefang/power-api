@@ -23,4 +23,6 @@ public interface IUserRoleMapper {
 
     Set<Integer> findIdsByUserId(Integer userId);
 
+    Integer countByRoleId(Integer roleId);
+
 }

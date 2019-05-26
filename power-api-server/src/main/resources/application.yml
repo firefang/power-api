@@ -19,3 +19,4 @@ power:
     required-transaction-attributes:
     - login
     - logout
+    - upsertBatch

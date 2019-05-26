@@ -53,4 +53,8 @@
             #{item}
         </foreach>
     </select>
+
+    <select id="findAll" resultMap="roleMap">
+        SELECT <include refid="cols" /> FROM <include refid="table" />
+    </select>
 </mapper>
