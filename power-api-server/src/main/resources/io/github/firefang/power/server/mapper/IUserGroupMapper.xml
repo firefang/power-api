@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.github.firefang.power.server.mapper.IUserGroupMapper">
+    <sql id="table">t_user_group</sql>
+
+    <insert id="add">
+        INSERT INTO <include refid="table" /> (`uid`, `gid`) VALUES
+        <foreach collection="userIds" item="item" separator=",">
+            (#{item}, #{groupId})
+        </foreach>
+    </insert>
+
+    <delete id="deleteByGroupId">
+        DELETE FROM <include refid="table" />
+        WHERE `gid` = #{groupId};
+    </delete>
+
+    <delete id="deleteByUserId">
+        DELETE FROM <include refid="table" />
+        WHERE `uid` = #{userId};
+    </delete>
+
+    <select id="findUsersByGroupId" resultMap="io.github.firefang.power.server.mapper.IUserMapper.userMap">
+        SELECT ua.`id`, ua.`username`, ui.`nickname`, ui.`email` FROM t_user_group ug
+        JOIN t_user_auth ua ON ug.`uid` = ua.`id`
+        JOIN t_user_info ui ON ui.`id` = ua.`id`
+        WHERE ug.`gid` = #{groupId};
+    </select>
+
+    <select id="findGroupsByUserId" resultMap="io.github.firefang.power.server.mapper.IGroupMapper.groupMap">
+        SELECT g.`id`, g.`group_name` FROM t_user_group ug
+        JOIN t_group g ON ug.`gid` = g.`id`
+        WHERE ug.`uid` = #{userId};
+    </select>
+</mapper>

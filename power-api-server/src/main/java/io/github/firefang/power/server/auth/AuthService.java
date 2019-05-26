@@ -9,6 +9,7 @@ import io.github.firefang.power.common.util.StringUtil;
 import io.github.firefang.power.exception.UnAuthorizedException;
 import io.github.firefang.power.login.IAuthService;
 import io.github.firefang.power.server.IPowerConstants;
+import io.github.firefang.power.server.cache.TokenCache;
 import io.github.firefang.power.server.entity.domain.UserAuthDO;
 import io.github.firefang.power.server.mapper.IUserAuthMapper;
 
@@ -60,10 +61,16 @@ public class AuthService implements IAuthService {
         if (!StringUtil.hasLength(token)) {
             throw new UnAuthorizedException();
         }
+        if (TokenCache.getUserId(token) != null) {
+            // 已验证过该Token
+            return;
+        }
         Integer userId = TokenHelper.decodeUserId(token);
         UserAuthDO user = authMapper.findOneById(userId);
         if (user == null || user.getTokenKey() == null || !TokenHelper.verify(user.getTokenKey(), token)) {
             throw new UnAuthorizedException();
+        } else {
+            TokenCache.setUserId(token, user.getId());
         }
     }
 

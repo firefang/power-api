@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.github.firefang.power.server.mapper.IRolePermissionMapper">
+    <sql id="table">t_role_permission</sql>
+
+    <select id="countPermission" resultType="java.lang.Integer">
+        SELECT COUNT(0) FROM <include refid="table" /> rp
+        JOIN t_permission p ON p.`id` = rp.`pid`
+        WHERE p.`permission_name` = #{permissionName} AND rp.`rid` IN
+        <foreach collection="collection" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </select>
+</mapper>

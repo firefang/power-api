@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.github.firefang.power.server.mapper.IUserRoleMapper">
+    <sql id="table">t_user_role</sql>
+
+    <insert id="add">
+        INSERT INTO <include refid="table" /> ( `uid`, `rid` ) VALUES
+        <foreach collection="roleIds" item="roleId" separator=",">
+            ( #{userId}, #{roleId} )
+        </foreach>
+    </insert>
+
+    <delete id="deleteByUserId">
+        DELETE FROM <include refid="table" />
+        WHERE `uid` = #{userId};
+    </delete>
+
+    <delete id="deleteByRoleId">
+        DELETE FROM <include refid="table" />
+        WHERE `rid` = #{roleId};
+    </delete>
+
+    <select id="findByUserId" resultMap="io.github.firefang.power.server.mapper.IRoleMapper.roleMap">
+        SELECT ur.`rid`, r.`role_name` FROM <include refid="table" /> ur
+        JOIN t_role r ON ur.`rid` = r.`id`
+        WHERE ur.`uid` = #{userId};
+    </select>
+
+    <select id="findIdsByUserId" resultType="java.lang.Integer">
+        SELECT `rid` FROM <include refid="table" />
+        WHERE `uid` = #{userId};
+    </select>
+</mapper>

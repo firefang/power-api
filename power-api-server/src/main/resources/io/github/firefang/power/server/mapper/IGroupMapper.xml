@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.github.firefang.power.server.mapper.IGroupMapper">
+    <sql id="table">t_group</sql>
+    <sql id="cols">`id`, `group_name`</sql>
+    <sql id="where">
+        <where>
+            <if test="id != null">`id` = #{id}</if>
+            <if test="name != null"> and `group_name` = #{name}</if>
+        </where>
+    </sql>
+    
+    <resultMap type="GroupDO" id="groupMap">
+        <id column="id" property="id" />
+        <result column="group_name" property="name" />
+    </resultMap>
+
+    <insert id="add" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO <include refid="table" /> ( `group_name` )
+        VALUES ( #{name} );
+    </insert>
+
+    <delete id="deleteById">
+        DELETE FROM <include refid="table" /> WHERE `id` = #{id};
+    </delete>
+
+    <update id="updateById">
+        UPDATE <include refid="table" />
+        SET `group_name` = #{name}
+        WHERE `id` = #{id};
+    </update>
+
+    <select id="findOneById" resultMap="groupMap">
+        SELECT <include refid="cols" /> FROM <include refid="table" />
+        WHERE `id` = #{id};
+    </select>
+
+    <select id="findByName" resultMap="groupMap">
+        SELECT <include refid="cols" /> FROM <include refid="table" />
+        WHERE `group_name` = #{name};
+    </select>
+
+    <select id="count" resultType="java.lang.Long">
+        SELECT COUNT(0) FROM <include refid="table" />
+        <include refid="where" />
+    </select>
+
+    <select id="find" resultMap="groupMap">
+        SELECT <include refid="cols" /> FROM <include refid="table" />
+        <include refid="where" />
+    </select>
+</mapper>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.github.firefang.power.server.mapper.IRoleMapper">
+    <sql id="table">t_role</sql>
+    <sql id="cols">`id`, `role_name`, `is_sa`</sql>
+
+    <resultMap type="RoleDO" id="roleMap">
+        <id column="id" property="id" />
+        <result column="role_name" property="name" />
+        <result column="is_sa" property="sa" />
+    </resultMap>
+
+    <insert id="add" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO <include refid="table" /> (`role_name`) VALUES (#{name});
+    </insert>
+
+    <delete id="deleteById">
+        DELETE FROM <include refid="table" /> WHERE `id` = #{id};
+    </delete>
+
+    <update id="updateById">
+        UPDATE <include refid="table" /> SET `role_name` = #{name}
+        WHERE `id` = #{id};
+    </update>
+
+    <select id="countByIds" resultMap="roleMap">
+        SELECT COUNT(0) FROM <include refid="table" />
+        WHERE `id` IN
+        <foreach collection="collection" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="count" resultType="java.lang.Long">
+        SELECT COUNT(0) FROM <include refid="table" />
+        <where>
+            <if test="name != null">`role_name` = #{name}</if>
+        </where>
+    </select>
+
+    <select id="find" resultMap="roleMap">
+        SELECT <include refid="cols" /> FROM <include refid="table" />
+        <where>
+            <if test="name != null">`role_name` = #{name}</if>
+        </where>
+    </select>
+
+    <select id="isSuperAdmin" resultType="java.lang.Boolean">
+        SELECT MAX(`is_sa`) FROM <include refid="table" />
+        WHERE `id` in
+        <foreach collection="collection" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </select>
+</mapper>

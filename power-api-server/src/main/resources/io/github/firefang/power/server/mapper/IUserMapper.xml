@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.github.firefang.power.server.mapper.IUserMapper">
+    <sql id="table">t_user_auth auth JOIN t_user_info info ON auth.id = info.id</sql>
+    <sql id="cols">auth.`id`, `username`, `nickname`, `email`</sql>
+    <sql id="where">
+        <where>
+            <if test="id != null">auth.`id` = #{id}</if>
+            <if test="username != null">`username` = #{username}</if>
+            <if test="nickname != null">`nickname` = #{nickname)</if>
+            <if test="email != null">`email` = #{email}</if>
+        </where>
+    </sql>
+
+    <resultMap type="UserDO" id="userMap">
+        <id column="id" property="id" />
+        <result column="username" property="username" />
+        <result column="nickname" property="nickname" />
+        <result column="email" property="email" />
+    </resultMap>
+
+    <select id="findOneById" resultMap="userMap">
+        SELECT <include refid="cols" /> FROM <include refid="table" />
+        WHERE auth.`id` = #{id};
+    </select>
+
+    <select id="count" resultType="java.lang.Long">
+        SELECT COUNT(0) FROM <include refid="table" />
+        <include refid="where" />
+    </select>
+
+    <select id="find" resultMap="userMap">
+        SELECT <include refid="cols" /> FROM <include refid="table" />
+        <include refid="where" />
+    </select>
+</mapper>
