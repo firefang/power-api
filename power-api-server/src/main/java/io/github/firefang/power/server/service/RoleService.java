@@ -6,7 +6,6 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 
 import io.github.firefang.power.exception.BusinessException;
-import io.github.firefang.power.server.cache.CacheLock;
 import io.github.firefang.power.server.entity.domain.PermDO;
 import io.github.firefang.power.server.entity.domain.RoleDO;
 import io.github.firefang.power.server.entity.form.RoleForm;
@@ -37,12 +36,8 @@ public class RoleService extends BaseService<RoleDO, Integer> {
     }
 
     public Integer add(RoleForm form) {
-        checkNameNotInUse(roleMapper, form.getName(), null);
-        if (!CacheLock.tryLock("add_role:" + form.getName())) {
-            throw new BusinessException(MSG_NAME_IN_USE);
-        }
         RoleDO entity = translate(form);
-        roleMapper.add(entity);
+        saveUniqueFieldSafely(() -> roleMapper.add(entity));
         return entity.getId();
     }
 
@@ -57,17 +52,10 @@ public class RoleService extends BaseService<RoleDO, Integer> {
     }
 
     public void update(Integer id, RoleForm form) {
-        RoleDO old = checkExistById(roleMapper, id);
-        if (old.getName().equals(form.getName())) {
-            return;
-        }
-        checkNameNotInUse(roleMapper, form.getName(), null);
+        checkExistById(roleMapper, id);
         RoleDO entity = translate(form);
         entity.setId(id);
-        if (!CacheLock.tryLock("update_role:" + form.getName())) {
-            throw new BusinessException(MSG_NAME_IN_USE);
-        }
-        roleMapper.updateById(entity);
+        saveUniqueFieldSafely(() -> roleMapper.updateById(entity));
     }
 
     public List<RoleDO> list() {

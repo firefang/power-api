@@ -10,8 +10,9 @@ import io.github.firefang.power.exception.BusinessException;
 import io.github.firefang.power.exception.NoPermissionException;
 import io.github.firefang.power.page.IPageableService;
 import io.github.firefang.power.page.Pagination;
+import io.github.firefang.power.server.IPowerConstants;
 import io.github.firefang.power.server.auth.TokenHelper;
-import io.github.firefang.power.server.cache.CacheLock;
+import io.github.firefang.power.server.cache.TokenCache;
 import io.github.firefang.power.server.entity.domain.GroupDO;
 import io.github.firefang.power.server.entity.domain.RoleDO;
 import io.github.firefang.power.server.entity.domain.UserAuthDO;
@@ -28,6 +29,7 @@ import io.github.firefang.power.server.mapper.IUserInfoMapper;
 import io.github.firefang.power.server.mapper.IUserMapper;
 import io.github.firefang.power.server.mapper.IUserRoleMapper;
 import io.github.firefang.power.server.service.base.BaseService;
+import io.github.firefang.power.web.util.CurrentRequestUtil;
 
 /**
  * @author xinufo
@@ -57,24 +59,16 @@ public class UserService extends BaseService<UserInfoDO, Integer> implements IPa
 
     public Integer add(CreateUserForm form) {
         String username = form.getUsername();
-        if (authMapper.findByUsername(username) != null) {
-            throw new BusinessException(MSG_NAME_IN_USE);
-        }
 
         Set<Integer> roleIds = form.getRoleIds();
         checkRoleExist(roleIds);
         checkSa(null, roleIds);
 
-        String key = "add_user:" + username;
-        if (!CacheLock.tryLock(key)) {
-            throw new BusinessException(MSG_NAME_IN_USE);
-        }
-
         UserAuthDO auth = new UserAuthDO();
         auth.setUsername(username);
         String password = encoder.encode(form.getPassword());
         auth.setPassword(password);
-        authMapper.add(auth);
+        saveUniqueFieldSafely(() -> authMapper.add(auth));
 
         Integer id = auth.getId();
         UserInfoDO info = new UserInfoDO();
@@ -89,6 +83,10 @@ public class UserService extends BaseService<UserInfoDO, Integer> implements IPa
 
     public void deleteById(Integer id) {
         checkExistById(infoMapper, id);
+        Set<Integer> roleIds = userRoleMapper.findIdsByUserId(id);
+        if (roleMapper.isSuperAdmin(roleIds)) {
+            throw new BusinessException("不允许删除超级管理员");
+        }
         authMapper.deleteById(id);
         infoMapper.deleteById(id);
         userRoleMapper.deleteByUserId(id);
@@ -96,23 +94,12 @@ public class UserService extends BaseService<UserInfoDO, Integer> implements IPa
     }
 
     public void updateById(Integer id, UpdateUserForm form) {
-        UserInfoDO old = checkExistById(infoMapper, id);
+        checkExistById(infoMapper, id);
         UserInfoDO info = new UserInfoDO();
         info.setId(id);
         info.setEmail(form.getEmail());
-        String nickname = form.getNickname();
-        String oldNickname = old.getNickname();
-        if (nickname != null && !nickname.equals(oldNickname)) {
-            if (infoMapper.findByNickname(nickname) != null) {
-                throw new BusinessException(MSG_NAME_IN_USE);
-            }
-            String key = "update_user:" + nickname;
-            if (!CacheLock.tryLock(key)) {
-                throw new BusinessException(MSG_NAME_IN_USE);
-            }
-        }
-        info.setNickname(nickname);
-        infoMapper.updateById(info);
+        info.setNickname(form.getNickname());
+        saveUniqueFieldSafely(() -> infoMapper.updateById(info));
     }
 
     public void updatePassword(Integer id, UpdatePasswordForm form) {
@@ -127,6 +114,8 @@ public class UserService extends BaseService<UserInfoDO, Integer> implements IPa
         auth.setPassword(password);
         auth.setTokenKey(null); // 使该用户所有Token失效
         authMapper.updateById(auth);
+        String token = CurrentRequestUtil.getHeader(IPowerConstants.TOKEN_KEY);
+        TokenCache.invalid(token);
     }
 
     public UserDO info(Integer id) {

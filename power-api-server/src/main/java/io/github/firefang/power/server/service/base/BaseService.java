@@ -1,10 +1,12 @@
 package io.github.firefang.power.server.service.base;
 
 import java.io.Serializable;
+import java.util.function.Supplier;
+
+import org.springframework.dao.DuplicateKeyException;
 
 import io.github.firefang.power.exception.BusinessException;
 import io.github.firefang.power.mapper.IBaseMapper;
-import io.github.firefang.power.server.mapper.INamedEntityMapper;
 
 /**
  * @author xinufo
@@ -29,16 +31,10 @@ public abstract class BaseService<T, PK extends Serializable> {
         return result;
     }
 
-    /**
-     * 检查实体名称是否被使用，被使用则抛出异常
-     * 
-     * @param mapper
-     * @param name
-     * @throws BusinessException 实体名称被使用时抛出异常
-     */
-    protected void checkNameNotInUse(INamedEntityMapper<?, PK> mapper, String name, PK parentId)
-            throws BusinessException {
-        if (mapper.findByName(name, parentId) != null) {
+    protected void saveUniqueFieldSafely(Supplier<?> mapper) {
+        try {
+            mapper.get();
+        } catch (DuplicateKeyException e) {
             throw new BusinessException(MSG_NAME_IN_USE);
         }
     }

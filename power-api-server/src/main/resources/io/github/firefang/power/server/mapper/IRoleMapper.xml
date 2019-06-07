@@ -24,7 +24,12 @@
         WHERE `id` = #{id};
     </update>
 
-    <select id="countByIds" resultMap="roleMap">
+    <select id="findOneById" resultMap="roleMap">
+        SELECT <include refid="cols" /> FROM <include refid="table" />
+        WHERE `id` = #{id};
+    </select>
+
+    <select id="countByIds" resultType="java.lang.Integer">
         SELECT COUNT(0) FROM <include refid="table" />
         WHERE `id` IN
         <foreach collection="collection" item="id" open="(" close=")" separator=",">

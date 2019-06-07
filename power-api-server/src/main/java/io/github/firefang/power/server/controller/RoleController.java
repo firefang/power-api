@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.github.firefang.power.permission.annotations.Permission;
 import io.github.firefang.power.permission.annotations.PermissionGroup;
+import io.github.firefang.power.permission.annotations.PermissionParam;
+import io.github.firefang.power.server.IPowerConstants;
 import io.github.firefang.power.server.entity.domain.PermDO;
 import io.github.firefang.power.server.entity.domain.RoleDO;
 import io.github.firefang.power.server.entity.form.RoleForm;
@@ -34,6 +36,10 @@ import io.swagger.annotations.ApiOperation;
 @RestController
 @RequestMapping("/roles")
 public class RoleController {
+    public static final String PERM_PARAM_KEY = "roleId";
+    private static final String PERM_EXTRA_PARAM = "{" + IPowerConstants.PERM_TYPE_KEY + ":'"
+            + IPowerConstants.PERM_TYPE_ROLE + "'}"; // {type: 'role'}
+
     private RoleService roleSrv;
 
     public RoleController(RoleService roleSrv) {
@@ -58,10 +64,10 @@ public class RoleController {
     }
 
     @ApiOperation("修改角色")
-    @Permission(value = "修改角色", horizontalCheck = false)
+    @Permission(value = "修改角色", extraParams = PERM_EXTRA_PARAM)
     @PutMapping("/{id}")
-    @ResponseStatus(HttpStatus.CREATED)
-    public void update(@PathVariable("id") Integer id, @Validated @RequestBody RoleForm form) {
+    public void update(@PermissionParam(name = PERM_PARAM_KEY) @PathVariable("id") Integer id,
+            @Validated @RequestBody RoleForm form) {
         roleSrv.update(id, form);
     }
 
@@ -74,9 +80,9 @@ public class RoleController {
     }
 
     @ApiOperation("修改角色拥有的权限")
-    @Permission(value = "修改角色权限", horizontalCheck = false)
+    @Permission(value = "修改角色权限", extraParams = PERM_EXTRA_PARAM)
     @PutMapping("/{id}/permissions")
-    public void updateRolePermissions(@PathVariable("id") Integer id,
+    public void updateRolePermissions(@PermissionParam(name = PERM_PARAM_KEY) @PathVariable("id") Integer id,
             @Validated @RequestBody UpdateRolePermissionsForm form) {
         roleSrv.updateRolePermissions(id, form);
     }

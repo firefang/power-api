@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import io.github.firefang.power.exception.BusinessException;
 import io.github.firefang.power.page.IPageableService;
 import io.github.firefang.power.page.Pagination;
-import io.github.firefang.power.server.cache.CacheLock;
 import io.github.firefang.power.server.entity.domain.GroupDO;
 import io.github.firefang.power.server.entity.domain.UserDO;
 import io.github.firefang.power.server.entity.form.GroupForm;
@@ -35,12 +34,8 @@ public class GroupService extends BaseService<GroupDO, Integer> implements IPage
     }
 
     public Integer add(GroupForm form) {
-        checkNameNotInUse(groupMapper, form.getName(), null);
         GroupDO entity = translate(form);
-        if (CacheLock.tryLock("add_group:" + form.getName())) {
-            throw new BusinessException(MSG_NAME_IN_USE);
-        }
-        groupMapper.add(entity);
+        saveUniqueFieldSafely(() -> groupMapper.add(entity));
         return entity.getId();
     }
 
@@ -51,17 +46,10 @@ public class GroupService extends BaseService<GroupDO, Integer> implements IPage
     }
 
     public void updateById(Integer id, GroupForm form) {
-        GroupDO old = checkExistById(groupMapper, id);
-        if (old.getName().equals(form.getName())) {
-            return;
-        }
-        checkNameNotInUse(groupMapper, form.getName(), null);
+        checkExistById(groupMapper, id);
         GroupDO entity = translate(form);
-        if (CacheLock.tryLock("update_group:" + form.getName())) {
-            throw new BusinessException(MSG_NAME_IN_USE);
-        }
         entity.setId(id);
-        groupMapper.updateById(entity);
+        saveUniqueFieldSafely(() -> groupMapper.updateById(entity));
     }
 
     @Override
