@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.github.firefang.power.server.mapper.IProjectMapper">
+    <sql id="table">t_project</sql>
+    <sql id="cols">`id`, `group_id`,  `project_name`, `remark`, `encrypt_class`</sql>
+    <sql id="where">
+        <where>
+            <if test="id != null">`id` = #{id}</if>
+            <if test="groupId != null">`group_id` = #{groupId}</if>
+            <if test="name != null"> and `project_name` = #{name}</if>
+            <if test="encryptClass != null"> and `encrypt_class` = #{encryptClass}</if>
+        </where>
+    </sql>
+
+    <resultMap type="ProjectDO" id="projectMap">
+        <id column="id" property="id" />
+        <result column="group_id" property="groupId" />
+        <result column="project_name" property="name" />
+        <result column="remark" property="remark" />
+        <result column="encrypt_class" property="encryptClass" />
+    </resultMap>
+
+    <insert id="add" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO <include refid="table" /> ( `group_id`, `project_name`, `remark`, `encrypt_class` )
+        VALUES ( #{groupId}, #{name}, #{remark}, #{encryptClass} );
+    </insert>
+
+    <delete id="deleteById">
+        DELETE FROM <include refid="table" /> WHERE `id` = #{id};
+    </delete>
+
+    <update id="updateById">
+        UPDATE <include refid="table" />
+        SET `project_name` = #{name},
+            `remark` = #{remark},
+            `encrypt_class` = #{encryptClass}
+        WHERE `id` = #{id};
+    </update>
+
+    <select id="findOneById" resultMap="projectMap">
+        SELECT <include refid="cols" /> FROM <include refid="table" />
+        WHERE `id` = #{id};
+    </select>
+
+    <select id="findByName" resultMap="projectMap">
+        SELECT <include refid="cols" /> FROM <include refid="table" />
+        WHERE `project_name` = #{name} AND `group_id` = #{parentId};
+    </select>
+
+    <select id="count" resultType="java.lang.Long">
+        SELECT COUNT(0) FROM <include refid="table" />
+        <include refid="where" />
+    </select>
+
+    <select id="find" resultMap="projectMap">
+        SELECT <include refid="cols" /> FROM <include refid="table" />
+        <include refid="where" />
+    </select>
+</mapper>

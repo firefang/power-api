@@ -16,4 +16,5 @@ public interface IPowerConstants {
     // 权限类型
 
     String PERM_TYPE_ROLE = "role";
+    String PERM_TYPE_PROJECT = "project";
 }

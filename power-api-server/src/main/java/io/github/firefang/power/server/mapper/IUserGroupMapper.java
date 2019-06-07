@@ -24,4 +24,6 @@ public interface IUserGroupMapper {
 
     List<GroupDO> findGroupsByUserId(Integer userId);
 
+    Boolean isUserInGroup(@Param("userId") Integer userId, @Param("groupId") Integer groupId);
+
 }

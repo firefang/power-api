@@ -33,4 +33,9 @@
         JOIN t_group g ON ug.`gid` = g.`id`
         WHERE ug.`uid` = #{userId};
     </select>
+
+    <select id="isUserInGroup" resultType="java.lang.Boolean">
+        SELECT COUNT(0) > 0 FROM <include refid="table" />
+        WHERE `uid` = #{userId} AND `gid` = #{groupId};
+    </select>
 </mapper>
